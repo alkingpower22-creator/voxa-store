@@ -1,0 +1,632 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>POWER & KILLER</title>
+
+  <style>
+    :root{
+      --bg1:#020207;         /* more black */
+      --bg2:#0e0014;         /* darker purple */
+      --bg3:#14001f;         /* deeper purple */
+      --glass:rgba(255,255,255,.055);
+      --stroke:rgba(255,255,255,.12);
+      --text:rgba(255,255,255,.93);
+      --muted:rgba(255,255,255,.63);
+      --accent:#7b2dff;      /* darker neon purple */
+      --accent2:#3fd6ff;     /* cyan glow */
+    }
+
+    *{margin:0;padding:0;box-sizing:border-box}
+    html{scroll-behavior:smooth}
+
+    body{
+      min-height:100vh;
+      color:var(--text);
+      background:
+        radial-gradient(900px 520px at 18% 10%, rgba(123,45,255,.16), transparent 60%),
+        radial-gradient(850px 520px at 86% 18%, rgba(63,214,255,.09), transparent 60%),
+        linear-gradient(135deg, var(--bg1), var(--bg2) 45%, var(--bg3));
+      font-family: system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+      overflow-x:hidden;
+    }
+
+    /* grain overlay */
+    .grain{
+      pointer-events:none;
+      position:fixed; inset:0;
+      background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='220' height='220' filter='url(%23n)' opacity='.35'/%3E%3C/svg%3E");
+      mix-blend-mode: overlay;
+      opacity:.11;
+      animation: grain 8s steps(10) infinite;
+      z-index:1;
+    }
+    @keyframes grain{
+      0%{transform:translate(0,0)}
+      25%{transform:translate(-6%,4%)}
+      50%{transform:translate(4%,-6%)}
+      75%{transform:translate(-3%,-2%)}
+      100%{transform:translate(0,0)}
+    }
+
+    .wrap{
+      max-width:1100px;
+      margin:0 auto;
+      padding:22px 18px 70px;
+      position:relative;
+      z-index:2;
+    }
+    .hidden{display:none !important;}
+
+    /* ===== NAV ===== */
+    nav{
+      display:flex;
+      align-items:center;
+      justify-content:flex-start;
+      gap:14px;
+      padding:14px 16px;
+      border:1px solid var(--stroke);
+      background:linear-gradient(180deg, rgba(255,255,255,.07), rgba(255,255,255,.02));
+      border-radius:18px;
+      backdrop-filter: blur(12px);
+      position:sticky;
+      top:14px;
+      z-index:5;
+    }
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      font-weight:1100;
+      letter-spacing:.9px;
+      text-transform: uppercase;
+      margin-left: 4px;
+    }
+    .dot{
+      width:12px;height:12px;border-radius:50%;
+      background: radial-gradient(circle at 30% 30%, var(--accent2), var(--accent));
+      box-shadow:0 0 18px rgba(123,45,255,.55);
+    }
+    .menuBtn{
+      font-size:28px;
+      cursor:pointer;
+      user-select:none;
+      padding:8px 12px;
+      border-radius:14px;
+      border:1px solid transparent;
+      transition:.2s;
+      color: rgba(255,255,255,.92);
+    }
+    .menuBtn:hover{
+      border-color: var(--stroke);
+      background: rgba(255,255,255,.05);
+    }
+
+    /* ===== CARDS ===== */
+    .card{
+      border:1px solid var(--stroke);
+      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
+      border-radius:22px;
+      padding:22px;
+      box-shadow: 0 18px 55px rgba(0,0,0,.45);
+      backdrop-filter: blur(12px);
+    }
+
+    /* ===== SELECT SCREEN ===== */
+    .selectScreen{
+      min-height: calc(100vh - 110px);
+      display:grid;
+      place-items:center;
+      padding: 40px 0;
+    }
+    .selectTitle{
+      text-align:center;
+      margin-bottom: 10px;
+      font-weight: 1200;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      font-size: 36px;
+    }
+    .selectSub{
+      text-align:center;
+      color: var(--muted);
+      margin-bottom: 22px;
+      line-height: 1.6;
+    }
+
+    .players{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      width: min(900px, 100%);
+    }
+    @media (max-width: 860px){ .players{grid-template-columns:1fr} }
+
+    .playerBtn{
+      cursor:pointer;
+      text-align:left;
+      position:relative;
+      overflow:hidden;
+      transition:.2s;
+    }
+    .playerBtn:hover{transform: translateY(-4px)}
+    .playerName{
+      font-size: 44px;
+      font-weight: 1200;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+      line-height: 1;
+    }
+    .playerDesc{
+      color: var(--muted);
+      line-height: 1.7;
+    }
+
+    .shine{
+      position:absolute;
+      inset:-40%;
+      background: linear-gradient(90deg, transparent, rgba(123,45,255,.18), transparent);
+      transform: rotate(18deg) translateX(-60%);
+      animation: shine 2.4s ease-in-out infinite;
+      pointer-events:none;
+    }
+    @keyframes shine{
+      0%{transform: rotate(18deg) translateX(-60%)}
+      55%{transform: rotate(18deg) translateX(70%)}
+      100%{transform: rotate(18deg) translateX(70%)}
+    }
+
+    .chipRow{display:flex; gap:8px; flex-wrap:wrap; margin-top:14px}
+    .chip{
+      padding:9px 11px;border-radius:999px;
+      border:1px solid var(--stroke);
+      background: rgba(0,0,0,.22);
+      font-size:12px;
+      color: rgba(255,255,255,.86);
+      font-weight: 1000;
+      text-transform: uppercase;
+    }
+
+    /* ===== MAIN LAYOUT ===== */
+    .hero{
+      padding:54px 6px 16px;
+      display:grid;
+      grid-template-columns: 1.1fr .9fr;
+      gap:14px;
+      align-items:start;
+    }
+    @media (max-width: 900px){
+      .hero{grid-template-columns:1fr}
+      nav{position:relative; top:0}
+    }
+
+    .headline{
+      font-size:56px;
+      line-height:1.0;
+      font-weight:1200;
+      text-transform:uppercase;
+      letter-spacing:1px;
+      margin-bottom:10px;
+      display:inline-block;
+    }
+    @media (max-width:520px){ .headline{font-size:42px} }
+
+    .tagline{
+      color:var(--muted);
+      font-size:16px;
+      line-height:1.7;
+      margin:8px 0 14px;
+    }
+
+    .badges{display:flex;flex-wrap:wrap;gap:10px;margin-top:8px}
+    .badge{
+      padding:10px 12px;border-radius:999px;
+      border:1px solid var(--stroke);
+      background: rgba(0,0,0,.22);
+      font-size:13px;color: rgba(255,255,255,.86);
+      font-weight: 1000;
+      text-transform: uppercase;
+    }
+
+    .btnRow{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+    .btn{
+      cursor:pointer;border:none;
+      padding:12px 14px;border-radius:16px;
+      font-weight:1200;letter-spacing:.2px;
+      transition:.2s;text-decoration:none;
+      display:inline-flex;align-items:center;justify-content:center;gap:8px;
+      text-transform: uppercase;
+    }
+    .btnPrimary{
+      color:#0b0b10;
+      background: linear-gradient(90deg, var(--accent2), var(--accent));
+      box-shadow: 0 10px 30px rgba(123,45,255,.16);
+    }
+    .btnPrimary:hover{transform: translateY(-2px)}
+    .btnGhost{
+      color:var(--text);
+      background: rgba(255,255,255,.06);
+      border:1px solid var(--stroke);
+    }
+    .btnGhost:hover{background: rgba(255,255,255,.09)}
+
+    .title{
+      font-size: 18px;
+      font-weight: 1200;
+      letter-spacing:.6px;
+      margin-bottom: 10px;
+      text-transform: uppercase;
+    }
+    .muted{color:var(--muted); line-height:1.7}
+
+    .list{
+      margin-top:10px;
+      display:grid;
+      gap:10px;
+    }
+    .item{
+      padding:12px 14px;
+      border-radius:18px;
+      border:1px solid var(--stroke);
+      background: rgba(0,0,0,.18);
+      display:flex;align-items:center;justify-content:space-between;gap:12px;
+    }
+    .pill{
+      padding:8px 10px;
+      border-radius:999px;
+      background: rgba(123,45,255,.14);
+      border:1px solid rgba(123,45,255,.25);
+      color: rgba(255,255,255,.9);
+      font-size: 12px;
+      font-weight: 1200;
+      white-space:nowrap;
+      text-transform: uppercase;
+    }
+
+    footer{
+      margin-top: 22px;
+      text-align:center;
+      color: rgba(255,255,255,.5);
+      font-size: 13px;
+      padding: 16px 0 0;
+    }
+
+    /* ===== SIDE MENU (LEFT) ===== */
+    .sideMenu{
+      position:fixed;
+      top:0;
+      left:-290px;
+      right:auto;
+      width:290px;
+      height:100vh;
+      background: linear-gradient(180deg, #020207, #0e0014, #14001f);
+      border-right:1px solid rgba(255,255,255,.14);
+      padding:24px 18px;
+      transition:.28s ease;
+      z-index:999;
+      backdrop-filter: blur(14px);
+    }
+    .sideMenu.active{ left:0; }
+
+    .sideHeader{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      margin-bottom:16px;
+    }
+    .sideMenu h3{
+      letter-spacing:1px;
+      text-transform: uppercase;
+      font-size: 16px;
+    }
+    .closeBtn{
+      cursor:pointer;
+      font-size:22px;
+      padding:8px 10px;
+      border-radius:12px;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.05);
+      transition:.2s;
+    }
+    .closeBtn:hover{ background: rgba(255,255,255,.09); }
+
+    .sideMenu button{
+      width:100%;
+      margin-bottom:12px;
+      padding:12px;
+      background: rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.13);
+      color:#fff;
+      border-radius:14px;
+      cursor:pointer;
+      font-weight:1200;
+      transition:.2s;
+      text-align:left;
+      text-transform: uppercase;
+      letter-spacing:.4px;
+    }
+    .sideMenu button:hover{
+      background: rgba(123,45,255,.14);
+      border-color: rgba(123,45,255,.25);
+    }
+
+    .backDrop{
+      position:fixed;
+      inset:0;
+      background: rgba(0,0,0,.55);
+      opacity:0;
+      pointer-events:none;
+      transition:.2s;
+      z-index:998;
+    }
+    .backDrop.active{
+      opacity:1;
+      pointer-events:auto;
+    }
+
+    /* background music player hidden */
+    audio{
+      position:fixed;
+      left:-9999px;
+      bottom:-9999px;
+      width:1px;height:1px;
+      opacity:0;
+      pointer-events:none;
+    }
+
+    /* ===== Mobile polish ===== */
+    @media (max-width: 600px){
+      .wrap{padding:14px 12px 60px;}
+      nav{padding:12px 12px;}
+      .playerName{font-size:36px;}
+      .headline{font-size:40px;}
+      .card{padding:16px;border-radius:18px;}
+      .btn{width:100%; justify-content:center;}
+      .btnRow{gap:8px;}
+      .sideMenu{width:86vw; max-width:320px;}
+    }
+  </style>
+</head>
+
+<body>
+  <div class="grain"></div>
+
+  <!-- Background music (put beat.mp3 next to this file) -->
+  <audio id="bgm" loop>
+    <source src="beat.mp3" type="audio/mpeg">
+  </audio>
+
+  <!-- Side menu -->
+  <div id="backDrop" class="backDrop" onclick="toggleMenu(false)"></div>
+  <aside id="sideMenu" class="sideMenu">
+    <div class="sideHeader">
+      <h3>MENU</h3>
+      <div class="closeBtn" onclick="toggleMenu(false)">✕</div>
+    </div>
+
+    <button onclick="showSection('about')">ABOUT ME</button>
+    <button onclick="showSection('other')">OTHER INFO ABOUT ME</button>
+    <button onclick="showSection('services')">MY SERVICES</button>
+    <button onclick="showSection('contact')">CONTACT ME</button>
+
+    <div style="height:12px"></div>
+    <button onclick="toggleMusic()">TOGGLE MUSIC</button>
+  </aside>
+
+  <div class="wrap">
+    <!-- SELECT SCREEN -->
+    <section id="select" class="selectScreen">
+      <div style="width: min(900px, 100%);">
+        <div class="selectTitle">POWER & KILLER</div>
+        <div class="selectSub">Click POWER or KILLER — the site opens + music starts.</div>
+
+        <div class="players">
+          <div class="card playerBtn" onclick="enterSite('POWER')">
+            <div class="shine"></div>
+            <div class="playerName">POWER</div>
+            <div class="playerDesc">Discord Bots • Services • Starter Python Games</div>
+            <div class="chipRow">
+              <div class="chip">Egypt</div>
+              <div class="chip">Discord</div>
+              <div class="chip">Dev</div>
+            </div>
+          </div>
+
+          <div class="card playerBtn" onclick="enterSite('KILLER')">
+            <div class="shine"></div>
+            <div class="playerName">KILLER</div>
+            <div class="playerDesc">Profile 2 — you can edit this later</div>
+            <div class="chipRow">
+              <div class="chip">Style</div>
+              <div class="chip">Power</div>
+              <div class="chip">Presence</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- MAIN SITE -->
+    <div id="main" class="hidden">
+      <nav>
+        <div class="menuBtn" onclick="toggleMenu(true)">☰</div>
+        <div class="brand"><div class="dot"></div> <span id="brandName">POWER</span></div>
+      </nav>
+
+      <!-- Sections (only one shows at a time) -->
+      <section class="hero">
+
+        <!-- ABOUT -->
+        <div id="sec-about" class="card">
+          <div class="headline">ABOUT ME</div>
+
+          <p class="tagline" id="aboutLines">
+            <b>name :</b> power<br>
+            <b>age :</b> 15<br>
+            <b>from :</b> EYGPT<br>
+            <b>nationality :</b> Egyptian<br>
+            <b>my skills :</b> Good dev for discord bots and starter in making py games
+          </p>
+
+          <div class="badges" id="badgeBox">
+            <div class="badge">DISCORD BOT DEV</div>
+            <div class="badge">STARTER PY GAMES</div>
+            <div class="badge">SERVICES SELLER</div>
+            <div class="badge">EGYPT</div>
+          </div>
+
+          <div class="btnRow">
+            <a class="btn btnPrimary" href="https://discord.gg/uRfdkYg9" target="_blank" rel="noreferrer">MY DISCORD SERVER</a>
+            <button class="btn btnGhost" onclick="toggleMusic()">MUSIC</button>
+          </div>
+        </div>
+
+        <!-- OTHER INFO -->
+        <div id="sec-other" class="card hidden">
+          <div class="title">OTHER INFO ABOUT ME</div>
+
+          <p class="muted"><b>my servers in discord</b></p>
+          <div class="list">
+            <div class="item">
+              <span>🌐 https://discord.gg/uRfdkYg9</span>
+              <span class="pill">INVITE</span>
+            </div>
+          </div>
+
+          <div style="height:14px"></div>
+
+          <p class="muted"><b>my rights</b></p>
+          <div class="list">
+            <div class="item"><span>✅ windy</span><span class="pill">RIGHT</span></div>
+            <div class="item"><span>✅ voxa</span><span class="pill">RIGHT</span></div>
+            <div class="item"><span>✅ lebro</span><span class="pill">RIGHT</span></div>
+          </div>
+
+          <div style="height:14px"></div>
+
+          <p class="muted">
+            I’m not a website designer, but I can build clean Discord systems & projects with a premium vibe.
+          </p>
+        </div>
+
+        <!-- SERVICES -->
+        <div id="sec-services" class="card hidden">
+          <div class="title">MY SERVICES</div>
+          <p class="muted">
+            i am seller for discord projects and discord services ( such as nitros and credits )
+          </p>
+
+          <div class="list">
+            <div class="item"><span>✅ Discord Projects</span><span class="pill">SELL</span></div>
+            <div class="item"><span>✅ Discord Services</span><span class="pill">NITRO</span></div>
+            <div class="item"><span>✅ Credits</span><span class="pill">CREDITS</span></div>
+          </div>
+        </div>
+
+        <!-- CONTACT -->
+        <div id="sec-contact" class="card hidden">
+          <div class="title">CONTACT ME</div>
+          <p class="muted">
+            You said you want contact via Discord but you don’t know how to link it.
+            The best way: put your Discord username + add your server link.
+          </p>
+
+          <div class="list">
+            <div class="item">
+              <span>🔗 Server</span>
+              <span class="pill"><a href="https://discord.gg/uRfdkYg9" target="_blank" rel="noreferrer" style="color:#fff;text-decoration:none;">OPEN</a></span>
+            </div>
+          </div>
+
+          <div style="height:14px"></div>
+
+          <p class="muted">
+            ✅ To add your Discord account here:
+            replace the button below with your username or a direct profile link (if you have one).
+          </p>
+
+          <div class="btnRow">
+            <!-- Replace YOUR_DISCORD_USERNAME with your real username -->
+            <a class="btn btnPrimary" href="https://discord.gg/uRfdkYg9" target="_blank" rel="noreferrer">CONTACT IN SERVER</a>
+            <button class="btn btnGhost" onclick="toggleMusic()">MUSIC</button>
+          </div>
+        </div>
+
+      </section>
+
+      <footer>© 2026 — POWER & KILLER</footer>
+    </div>
+  </div>
+
+  <script>
+    const bgm = document.getElementById("bgm");
+    const sideMenu = document.getElementById("sideMenu");
+    const backDrop = document.getElementById("backDrop");
+
+    function safePlayMusic(){
+      bgm.volume = 0.55;
+      const p = bgm.play();
+      if (p && typeof p.catch === "function") p.catch(()=>{});
+    }
+
+    function toggleMusic(){
+      if (bgm.paused) safePlayMusic();
+      else bgm.pause();
+    }
+
+    function toggleMenu(on){
+      const active = (on === undefined) ? !sideMenu.classList.contains("active") : on;
+      sideMenu.classList.toggle("active", active);
+      backDrop.classList.toggle("active", active);
+    }
+
+    function showSection(which){
+      document.getElementById("sec-about").classList.add("hidden");
+      document.getElementById("sec-other").classList.add("hidden");
+      document.getElementById("sec-services").classList.add("hidden");
+      document.getElementById("sec-contact").classList.add("hidden");
+
+      document.getElementById("sec-" + which).classList.remove("hidden");
+      toggleMenu(false);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    function enterSite(name){
+      document.getElementById("select").classList.add("hidden");
+      document.getElementById("main").classList.remove("hidden");
+
+      document.getElementById("brandName").textContent = name;
+
+      // POWER content (fixed as requested)
+      if (name === "POWER") {
+        // Keep as already written
+      }
+
+      // KILLER content (simple placeholder you can edit)
+      if (name === "KILLER"){
+        document.querySelector("#sec-about .headline").textContent = "ABOUT ME";
+        document.getElementById("aboutLines").innerHTML = `
+          <b>name :</b> killer<br>
+          <b>age :</b> --<br>
+          <b>from :</b> --<br>
+          <b>nationality :</b> --<br>
+          <b>my skills :</b> Edit this section for KILLER
+        `;
+        document.getElementById("badgeBox").innerHTML = `
+          <div class="badge">PROFILE 2</div>
+          <div class="badge">EDIT ME</div>
+          <div class="badge">POWER</div>
+          <div class="badge">STYLE</div>
+        `;
+      }
+
+      // Start music after clicking profile ✅
+      safePlayMusic();
+      showSection("about");
+    }
+  </script>
+</body>
+</html>
