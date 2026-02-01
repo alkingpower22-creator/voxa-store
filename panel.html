@@ -36,6 +36,7 @@
     .btn{
       cursor:pointer;border:1px solid var(--border);background: rgba(255,255,255,.04);
       color:var(--text);padding:10px 12px;border-radius:14px;font-weight:900;
+      text-decoration:none; display:inline-flex; align-items:center; justify-content:center;
     }
     .btn.primary{border-color: rgba(74,163,255,.45);background: rgba(74,163,255,.16)}
     .btn.ok{border-color: rgba(41,209,125,.45);background: rgba(41,209,125,.14)}
@@ -71,6 +72,7 @@
     label{font-size:12px;color:var(--muted);display:block;margin-bottom:6px}
     .fgrid{display:grid;grid-template-columns: 1fr 1fr;gap:12px}
     @media (max-width:900px){ .fgrid{grid-template-columns:1fr} }
+
     .list{display:flex;flex-direction:column;gap:10px;margin-top:10px}
     .item{
       border:1px solid var(--border);background: rgba(255,255,255,.03);
@@ -79,7 +81,14 @@
     .itemTop{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap}
     .itemTitle{font-weight:900}
     .hr{height:1px;background: var(--border);margin:12px 0}
-    .actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+
+    .actions{
+      display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;
+    }
+    @media (max-width:520px){
+      .actions .btn{flex:1 1 auto; justify-content:center}
+    }
+
     .status{
       font-weight:900;
       padding:6px 10px;border-radius:999px;border:1px solid var(--border);
@@ -98,7 +107,7 @@
         <div class="badge">VX</div>
         <div>
           <h1>Voxa Admin Panel</h1>
-          <p>Login بالباسورد → Sellers / Orders / Issues / Supplies</p>
+          <p>Login بالباسورد → Sellers / Orders / Proofs / Issues / Supplies</p>
         </div>
       </div>
       <div class="row">
@@ -142,6 +151,7 @@
         <div class="tabs">
           <button class="tab active" data-tab="sellers">Sellers</button>
           <button class="tab" data-tab="orders">Orders</button>
+          <button class="tab" data-tab="proofs">Proofs</button>
           <button class="tab" data-tab="issues">Issues</button>
           <button class="tab" data-tab="supplies">Supplies</button>
         </div>
@@ -167,17 +177,22 @@
 
         <!-- ORDERS -->
         <div id="tab-orders" class="hidden" style="margin-top:12px">
-          <div class="muted">كل الطلبات هنا (بتتسجل تلقائي من الموقع عند الشراء).</div>
+          <div class="muted">الطلبات هنا. أولًا تعمل استلام → بعدين Done عشان يروح Proofs.</div>
           <div class="hr"></div>
-
           <div class="list" id="ordersList"></div>
+        </div>
+
+        <!-- PROOFS -->
+        <div id="tab-proofs" class="hidden" style="margin-top:12px">
+          <div class="muted">الطلبات اللي اتعملها Done بتظهر هنا كـ Proofs (بدون أزرار).</div>
+          <div class="hr"></div>
+          <div class="list" id="proofsList"></div>
         </div>
 
         <!-- ISSUES -->
         <div id="tab-issues" class="hidden" style="margin-top:12px">
           <div class="muted">الشكاوي اللي جاية من Support. لكل مشكلة زر “رد”.</div>
           <div class="hr"></div>
-
           <div class="list" id="issuesList"></div>
         </div>
 
@@ -239,6 +254,7 @@
     const KEY_AUTH    = "voxa_panel_auth";
     const KEY_SELLERS = "voxa_sellers";
     const KEY_ORDERS  = "voxa_orders";
+    const KEY_PROOFS  = "voxa_proofs";
     const KEY_ISSUES  = "voxa_issues";
     const KEY_SUPPLY  = "voxa_supplies";
 
@@ -264,6 +280,7 @@
     // Ensure defaults exist
     if (!localStorage.getItem(KEY_SELLERS)) saveJSON(KEY_SELLERS, DEFAULT_SELLERS);
     if (!localStorage.getItem(KEY_ORDERS))  saveJSON(KEY_ORDERS, []);
+    if (!localStorage.getItem(KEY_PROOFS))  saveJSON(KEY_PROOFS, []);
     if (!localStorage.getItem(KEY_ISSUES))  saveJSON(KEY_ISSUES, []);
     if (!localStorage.getItem(KEY_SUPPLY))  saveJSON(KEY_SUPPLY, []);
 
@@ -283,6 +300,7 @@
     const tabs = {
       sellers: document.getElementById("tab-sellers"),
       orders: document.getElementById("tab-orders"),
+      proofs: document.getElementById("tab-proofs"),
       issues: document.getElementById("tab-issues"),
       supplies: document.getElementById("tab-supplies")
     };
@@ -321,9 +339,10 @@
     function renderCounts(){
       const sellers = loadJSON(KEY_SELLERS, DEFAULT_SELLERS).length;
       const orders  = loadJSON(KEY_ORDERS, []).length;
+      const proofs  = loadJSON(KEY_PROOFS, []).length;
       const issues  = loadJSON(KEY_ISSUES, []).length;
       const supplies= loadJSON(KEY_SUPPLY, []).length;
-      countsPill.textContent = `Sellers: ${sellers} — Orders: ${orders} — Issues: ${issues} — Supplies: ${supplies}`;
+      countsPill.textContent = `Sellers: ${sellers} — Orders: ${orders} — Proofs: ${proofs} — Issues: ${issues} — Supplies: ${supplies}`;
     }
 
     // ===== SELLERS =====
@@ -366,30 +385,129 @@
       renderAll();
     });
 
-    // ===== ORDERS =====
+    // ===== ORDERS (Claim -> Done -> Move to Proofs) =====
     const ordersList = document.getElementById("ordersList");
+
+    function normalizeDiscordLink(contact){
+      const c = String(contact||"").trim();
+      if (!c) return null;
+
+      // رابط مباشر
+      if (/^https?:\/\//i.test(c)) return c;
+
+      // Discord user id
+      if (/^\d{10,20}$/.test(c)) return `https://discord.com/users/${c}`;
+
+      return null;
+    }
+
+    async function copyText(txt){
+      try{
+        await navigator.clipboard.writeText(txt);
+        alert("✅ تم نسخ وسيلة التواصل");
+      }catch{
+        prompt("انسخ يدويًا:", txt);
+      }
+    }
 
     function renderOrders(){
       const list = loadJSON(KEY_ORDERS, []);
-      ordersList.innerHTML = list.length ? list.map(o=>`
-        <div class="item">
-          <div class="itemTop">
-            <div class="itemTitle">${esc(o.details)}</div>
-            ${statusHTML(o.status)}
-          </div>
-          <div class="muted" style="margin-top:6px">
-            العميل: <b style="color:var(--text)">${esc(o.customer)}</b> —
-            تواصل: <b style="color:var(--text)">${esc(o.contact)}</b><br/>
-            وقت: ${new Date(o.at).toLocaleString()}
-          </div>
-          <div class="actions">
-            <button class="btn ok small" data-o-set="done" data-oid="${o.id}">done</button>
-            <button class="btn danger small" data-o-set="closed" data-oid="${o.id}">closed</button>
-            <button class="btn small" data-o-del="${o.id}">حذف</button>
-          </div>
-        </div>
-      `).join("") : `<div class="muted">لا يوجد Orders.</div>`;
 
+      ordersList.innerHTML = list.length ? list.map(o=>{
+        const claimState = o.claimState || (o.claimedBy ? "claimed" : "unclaimed");
+        const isClaimed = claimState === "claimed";
+        const status = o.status || "open";
+
+        const contactLink = normalizeDiscordLink(o.contact);
+        const claimedLine = isClaimed
+          ? `مستلم بواسطة: <b style="color:var(--text)">${esc(o.claimedBy||"—")}</b> — وقت: ${o.claimedAt ? new Date(o.claimedAt).toLocaleString() : "—"}`
+          : `غير مستلم`;
+
+        const commBtn = contactLink
+          ? `<a class="btn small" href="${contactLink}" target="_blank" rel="noopener">فتح تواصل</a>`
+          : `<button class="btn small" data-copy-contact="${esc(o.contact)}">نسخ التواصل</button>`;
+
+        return `
+          <div class="item">
+            <div class="itemTop">
+              <div class="itemTitle">${esc(o.details)}</div>
+              ${statusHTML(status)}
+            </div>
+
+            <div class="muted" style="margin-top:6px">
+              العميل: <b style="color:var(--text)">${esc(o.customer)}</b> —
+              تواصل: <b style="color:var(--text)">${esc(o.contact)}</b><br/>
+              ${claimedLine}<br/>
+              وقت الإنشاء: ${new Date(o.at).toLocaleString()}
+            </div>
+
+            <div class="actions">
+              ${!isClaimed ? `<button class="btn ok small" data-o-claim="${o.id}">استلام</button>` : ``}
+              ${isClaimed ? `<button class="btn ok small" data-o-done="${o.id}">done</button>` : ``}
+
+              <button class="btn danger small" data-o-set="closed" data-oid="${o.id}">closed</button>
+              <button class="btn small" data-o-del="${o.id}">حذف</button>
+              ${commBtn}
+            </div>
+          </div>
+        `;
+      }).join("") : `<div class="muted">لا يوجد Orders.</div>`;
+
+      // Claim
+      ordersList.querySelectorAll("[data-o-claim]").forEach(btn=>{
+        btn.addEventListener("click", ()=>{
+          const id = btn.getAttribute("data-o-claim");
+          const adminName = prompt("اكتب اسم/يوزر الأدمن اللي استلم الطلب:");
+          if(!adminName) return;
+
+          const arr = loadJSON(KEY_ORDERS, []);
+          const it = arr.find(x=>x.id===id);
+          if(!it) return;
+
+          it.claimState = "claimed";
+          it.claimedBy = adminName.trim();
+          it.claimedAt = new Date().toISOString();
+
+          saveJSON(KEY_ORDERS, arr);
+
+          // افتح رابط التواصل لو ينفع
+          const link = normalizeDiscordLink(it.contact);
+          if(link) window.open(link, "_blank", "noopener");
+
+          renderAll();
+        });
+      });
+
+      // Done -> move to proofs
+      ordersList.querySelectorAll("[data-o-done]").forEach(btn=>{
+        btn.addEventListener("click", ()=>{
+          const id = btn.getAttribute("data-o-done");
+          const orders = loadJSON(KEY_ORDERS, []);
+          const it = orders.find(x=>x.id===id);
+          if(!it) return;
+
+          const claimState = it.claimState || (it.claimedBy ? "claimed" : "unclaimed");
+          if(claimState !== "claimed"){
+            alert("❌ لازم تعمل استلام الأول.");
+            return;
+          }
+
+          const newOrders = orders.filter(x=>x.id!==id);
+          saveJSON(KEY_ORDERS, newOrders);
+
+          const proofs = loadJSON(KEY_PROOFS, []);
+          proofs.unshift({
+            ...it,
+            status: "done",
+            doneAt: new Date().toISOString()
+          });
+          saveJSON(KEY_PROOFS, proofs);
+
+          renderAll();
+        });
+      });
+
+      // Closed status
       ordersList.querySelectorAll("[data-o-set]").forEach(btn=>{
         btn.addEventListener("click", ()=>{
           const id = btn.getAttribute("data-oid");
@@ -399,6 +517,8 @@
           if (it){ it.status = st; saveJSON(KEY_ORDERS, arr); renderAll(); }
         });
       });
+
+      // Delete
       ordersList.querySelectorAll("[data-o-del]").forEach(btn=>{
         btn.addEventListener("click", ()=>{
           const id = btn.getAttribute("data-o-del");
@@ -407,6 +527,34 @@
           renderAll();
         });
       });
+
+      // Copy contact
+      ordersList.querySelectorAll("[data-copy-contact]").forEach(btn=>{
+        btn.addEventListener("click", ()=>{
+          const txt = btn.getAttribute("data-copy-contact") || "";
+          copyText(txt);
+        });
+      });
+    }
+
+    // ===== PROOFS =====
+    const proofsList = document.getElementById("proofsList");
+    function renderProofs(){
+      const list = loadJSON(KEY_PROOFS, []);
+      proofsList.innerHTML = list.length ? list.map(p=>`
+        <div class="item">
+          <div class="itemTop">
+            <div class="itemTitle">${esc(p.details)}</div>
+            <span class="status s-done">proof</span>
+          </div>
+          <div class="muted" style="margin-top:6px">
+            العميل: <b style="color:var(--text)">${esc(p.customer)}</b> —
+            تواصل: <b style="color:var(--text)">${esc(p.contact)}</b><br/>
+            مستلم بواسطة: <b style="color:var(--text)">${esc(p.claimedBy||"—")}</b><br/>
+            وقت Done: ${p.doneAt ? new Date(p.doneAt).toLocaleString() : "—"}
+          </div>
+        </div>
+      `).join("") : `<div class="muted">لا يوجد Proofs.</div>`;
     }
 
     // ===== ISSUES =====
@@ -542,6 +690,7 @@
       renderCounts();
       renderSellers();
       renderOrders();
+      renderProofs();
       renderIssues();
       renderSupplies();
     }
