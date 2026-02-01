@@ -3,1205 +3,596 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Voxa Store — Marketplace Demo</title>
+  <title>Voxa Admin Panel</title>
   <style>
     :root{
-      --bg:#0b1220;
-      --panel:#0f1a30;
-      --panel2:#0c162b;
-      --text:#eaf0ff;
-      --muted:#a9b7d7;
-      --brand:#4aa3ff;
-      --ok:#29d17d;
-      --warn:#ffcc66;
-      --danger:#ff5c7a;
-      --border:rgba(255,255,255,.08);
-      --shadow: 0 18px 50px rgba(0,0,0,.45);
-      --radius:18px;
+      --bg:#0b1220; --panel2:#0c162b; --text:#eaf0ff; --muted:#a9b7d7;
+      --brand:#4aa3ff; --ok:#29d17d; --warn:#ffcc66; --danger:#ff5c7a;
+      --border:rgba(255,255,255,.08); --shadow:0 18px 50px rgba(0,0,0,.45); --radius:18px;
     }
     *{box-sizing:border-box}
     body{
-      margin:0;
-      font-family: system-ui, -apple-system, "Segoe UI", Tahoma, Arial, sans-serif;
+      margin:0; font-family: system-ui, -apple-system, "Segoe UI", Tahoma, Arial, sans-serif;
       background: radial-gradient(1200px 600px at 80% -10%, rgba(74,163,255,.25), transparent 60%),
                   radial-gradient(900px 500px at 20% 0%, rgba(41,209,125,.16), transparent 55%),
                   var(--bg);
-      color:var(--text);
-      min-height:100vh;
+      color:var(--text); min-height:100vh;
     }
-
-    .app{
-      display:grid;
-      grid-template-columns: 320px 1fr;
-      min-height:100vh;
+    .wrap{max-width:1100px;margin:0 auto;padding:22px 16px 40px}
+    .header{
+      display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;
+      padding:14px;border:1px solid var(--border);border-radius:var(--radius);
+      background: rgba(255,255,255,.04); box-shadow:var(--shadow);
     }
-    aside{
-      position:sticky;
-      top:0;
-      height:100vh;
-      padding:18px;
-      background: linear-gradient(180deg, rgba(255,255,255,.04), transparent 40%),
-                  var(--panel2);
-      border-left:1px solid var(--border);
-    }
-    main{ padding:24px 24px 40px; }
-
-    /* Mobile */
-    .topbar{
-      display:none;
-      position:sticky;
-      top:0;
-      z-index:10;
-      padding:14px 16px;
-      background: rgba(11,18,32,.7);
-      backdrop-filter: blur(10px);
-      border-bottom:1px solid var(--border);
-    }
-    .burger{
-      border:1px solid var(--border);
-      background: rgba(255,255,255,.04);
-      color:var(--text);
-      border-radius:14px;
-      padding:10px 12px;
-      cursor:pointer;
-    }
-    .brandline{display:flex;gap:10px;align-items:center;justify-content:space-between}
-    .brandline .title{font-weight:900;letter-spacing:.2px}
-
-    @media (max-width: 980px){
-      .app{grid-template-columns: 1fr}
-      aside{
-        position:fixed;
-        inset:0;
-        height:auto;
-        width:min(92vw, 360px);
-        transform: translateX(110%);
-        transition: .25s ease;
-        z-index:50;
-        border-left:none;
-        border-right:1px solid var(--border);
-      }
-      aside.open{transform: translateX(0)}
-      .overlay{
-        position:fixed; inset:0;
-        background: rgba(0,0,0,.55);
-        z-index:40;
-        opacity:0;
-        pointer-events:none;
-        transition:.2s ease;
-      }
-      .overlay.show{opacity:1; pointer-events:auto}
-      .topbar{display:block}
-      main{padding:18px 16px 30px}
-    }
-
-    /* Sidebar */
-    .logo{
-      display:flex; gap:12px; align-items:center;
-      padding:14px;
-      border:1px solid var(--border);
-      border-radius: var(--radius);
-      background: rgba(255,255,255,.04);
-      box-shadow: var(--shadow);
-    }
+    .title{display:flex;gap:12px;align-items:center}
     .badge{
       width:44px;height:44px;border-radius:14px;
       background: linear-gradient(135deg, rgba(74,163,255,.9), rgba(41,209,125,.7));
-      display:grid;place-items:center;
-      font-weight:900;
+      display:grid;place-items:center;font-weight:900;
     }
-    .logo h1{margin:0;font-size:16px;line-height:1.2}
-    .logo p{margin:3px 0 0;color:var(--muted);font-size:12px}
-
-    nav{margin-top:16px;display:flex;flex-direction:column;gap:10px}
-    .navbtn{
-      display:flex; gap:10px; align-items:center;
-      width:100%;
-      padding:12px 14px;
-      border-radius:16px;
-      border:1px solid var(--border);
-      background: rgba(255,255,255,.03);
-      color:var(--text);
-      cursor:pointer;
-      text-align:right;
-      transition:.15s ease;
+    .title h1{margin:0;font-size:18px}
+    .title p{margin:4px 0 0;color:var(--muted);font-size:12px;line-height:1.6}
+    .btn{
+      cursor:pointer;border:1px solid var(--border);background: rgba(255,255,255,.04);
+      color:var(--text);padding:10px 12px;border-radius:14px;font-weight:800;
     }
-    .navbtn:hover{transform: translateY(-1px); background: rgba(255,255,255,.06)}
-    .navbtn.active{
-      background: rgba(74,163,255,.14);
-      border-color: rgba(74,163,255,.35);
-      box-shadow: 0 12px 30px rgba(74,163,255,.12);
-    }
-    .navicon{
-      width:34px;height:34px;border-radius:12px;
-      background: rgba(255,255,255,.06);
-      display:grid;place-items:center;
-      border:1px solid var(--border);
-      flex:0 0 auto;
-    }
-    .navtext .t{font-weight:800}
-    .navtext .d{font-size:12px;color:var(--muted); margin-top:2px}
-
-    .sidecard{
-      margin-top:14px;
-      padding:14px;
-      border-radius: var(--radius);
-      border:1px solid var(--border);
-      background: rgba(255,255,255,.03);
-    }
-    .small{color:var(--muted); font-size:12px; line-height:1.6}
-
-    .rowflex{display:flex; gap:10px; align-items:center; justify-content:space-between; flex-wrap:wrap}
-    .switch{
-      display:flex; gap:10px; align-items:center;
-      padding:8px 10px;
-      border-radius:14px;
-      border:1px solid var(--border);
-      background: rgba(255,255,255,.03);
-      user-select:none;
-    }
-    .switch input{accent-color: var(--ok); width:18px; height:18px}
-    .pilllink{
-      display:inline-flex;
-      align-items:center;
-      gap:10px;
-      margin-top:10px;
-      padding:10px 12px;
-      border-radius:14px;
-      border:1px solid rgba(41,209,125,.35);
-      background: rgba(41,209,125,.10);
-      color:var(--text);
-      text-decoration:none;
-      font-weight:800;
+    .btn.primary{border-color: rgba(74,163,255,.45);background: rgba(74,163,255,.16)}
+    .btn.ok{border-color: rgba(41,209,125,.45);background: rgba(41,209,125,.14)}
+    .btn.danger{border-color: rgba(255,92,122,.45);background: rgba(255,92,122,.14)}
+    .btn:disabled{opacity:.55;cursor:not-allowed}
+    .pill{
+      display:inline-flex;gap:10px;align-items:center;
+      padding:8px 10px;border-radius:999px;border:1px solid var(--border);
+      background: rgba(255,255,255,.03);color:var(--muted);font-size:12px;
     }
 
-    /* Main */
-    .pagehead{
-      display:flex;
-      justify-content:space-between;
-      align-items:flex-start;
-      gap:16px;
-      margin-bottom:14px;
-    }
-    .pagehead h2{margin:0;font-size:24px;letter-spacing:.2px}
-    .pagehead p{margin:6px 0 0;color:var(--muted);line-height:1.7;max-width:70ch}
-    .chiprow{display:flex;flex-wrap:wrap;gap:8px; justify-content:flex-end}
-    .chip{
-      font-size:12px;
-      padding:7px 10px;
-      border-radius:999px;
-      border:1px solid var(--border);
-      background: rgba(255,255,255,.03);
-      color:var(--muted);
-    }
-
-    .grid{
-      display:grid;
-      grid-template-columns: repeat(12, 1fr);
-      gap:14px;
-      margin-top:16px;
-    }
+    .grid{display:grid;grid-template-columns: repeat(12,1fr);gap:14px;margin-top:14px}
     .card{
-      grid-column: span 6;
-      padding:16px;
-      border-radius: var(--radius);
-      border:1px solid var(--border);
+      grid-column:span 12;padding:16px;border-radius:var(--radius);border:1px solid var(--border);
       background: linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.02));
       box-shadow: var(--shadow);
-      min-height: 120px;
     }
-    .card h3{margin:0 0 8px; font-size:16px}
-    .card p{margin:0; color:var(--muted); line-height:1.7}
-    .card .meta{margin-top:12px; display:flex; gap:8px; flex-wrap:wrap}
-    .tag{
-      font-size:12px;
-      padding:6px 10px;
-      border-radius:999px;
-      border:1px solid var(--border);
-      background: rgba(255,255,255,.03);
-    }
-
-    @media (max-width: 980px){
-      .card{grid-column: span 12}
-      .pagehead{flex-direction:column; align-items:flex-start}
-      .chiprow{justify-content:flex-start}
-    }
-
-    /* Shop */
-    .toolbar{
-      display:flex;
-      gap:10px;
-      flex-wrap:wrap;
-      align-items:center;
-      justify-content:space-between;
-      margin-top:14px;
-    }
-    .search{
-      flex:1 1 280px;
-      display:flex;
-      gap:10px;
-      align-items:center;
-      padding:10px 12px;
-      border-radius:16px;
-      border:1px solid var(--border);
-      background: rgba(255,255,255,.03);
-    }
-    .search input{
-      width:100%;
-      background: transparent;
-      border:0;
-      outline:none;
-      color:var(--text);
-      font-size:14px;
-    }
-
-    .btn{
-      cursor:pointer;
-      border:1px solid var(--border);
-      background: rgba(255,255,255,.04);
-      color:var(--text);
-      padding:10px 12px;
-      border-radius:14px;
-      font-weight:800;
-    }
-    .btn.primary{
-      border-color: rgba(74,163,255,.45);
-      background: rgba(74,163,255,.16);
-    }
-    .btn.ok{
-      border-color: rgba(41,209,125,.45);
-      background: rgba(41,209,125,.14);
-    }
-    .btn.danger{
-      border-color: rgba(255,92,122,.45);
-      background: rgba(255,92,122,.14);
-    }
-    .btn:disabled{opacity:.55; cursor:not-allowed}
-
-    .tabs{
-      display:flex;
-      gap:8px;
-      flex-wrap:wrap;
-      margin-top:14px;
-    }
+    .card h2{margin:0 0 10px;font-size:16px}
+    .muted{color:var(--muted);font-size:12px;line-height:1.7}
+    .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:space-between}
+    .tabs{display:flex;gap:8px;flex-wrap:wrap}
     .tab{
-      border:1px solid var(--border);
-      background: rgba(255,255,255,.03);
-      color:var(--text);
-      padding:8px 10px;
-      border-radius:999px;
-      font-weight:900;
-      cursor:pointer;
-      font-size:12px;
+      border:1px solid var(--border); background: rgba(255,255,255,.03); color:var(--text);
+      padding:8px 10px;border-radius:999px;font-weight:900;cursor:pointer;font-size:12px;
     }
-    .tab.active{
-      border-color: rgba(74,163,255,.45);
-      background: rgba(74,163,255,.16);
-    }
-
-    .product{
-      grid-column: span 4;
-      padding:14px;
-      border-radius: var(--radius);
-      border:1px solid var(--border);
-      background: rgba(255,255,255,.03);
-    }
-    .pimg{
-      height:120px;
-      border-radius: 16px;
-      border:1px solid var(--border);
-      background:
-        radial-gradient(220px 100px at 30% 20%, rgba(74,163,255,.35), transparent 60%),
-        radial-gradient(220px 100px at 70% 80%, rgba(41,209,125,.25), transparent 60%),
-        rgba(255,255,255,.04);
-      display:flex;
-      align-items:flex-end;
-      justify-content:space-between;
-      padding:10px 12px;
-      margin-bottom:12px;
-    }
-    .price{
-      font-weight:900;
-      padding:6px 10px;
-      border-radius:999px;
-      border:1px solid rgba(255,255,255,.12);
-      background: rgba(0,0,0,.25);
-      font-size:12px;
-    }
-    .stock{
-      font-size:12px;
-      padding:6px 10px;
-      border-radius:999px;
-      border:1px solid rgba(41,209,125,.35);
-      background: rgba(41,209,125,.12);
-    }
-    .product h4{margin:0 0 6px; font-size:15px}
-    .product .desc{margin:0; color:var(--muted); font-size:13px; line-height:1.6}
-    .product .row{
-      margin-top:12px;
-      display:flex;
-      gap:10px;
-      align-items:center;
-      justify-content:space-between;
-      flex-wrap:wrap;
-    }
-
-    @media (max-width: 980px){
-      .product{grid-column: span 12}
-    }
-    @media (min-width: 981px) and (max-width: 1200px){
-      .product{grid-column: span 6}
-    }
-
-    .emptybox{
-      grid-column: span 12;
-      padding:18px;
-      border-radius: var(--radius);
-      border:1px dashed rgba(255,255,255,.18);
-      background: rgba(255,255,255,.02);
-      color: var(--muted);
-      line-height:1.8;
-    }
-    .plus{
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      width:28px;height:28px;
-      border-radius:10px;
-      border:1px solid rgba(41,209,125,.45);
-      background: rgba(41,209,125,.12);
-      font-weight:900;
-      color: var(--text);
-      margin-inline-start: 8px;
-      cursor:pointer;
-    }
-
-    /* Sellers */
-    .seller{
-      grid-column: span 6;
-      padding:16px;
-      border-radius: var(--radius);
-      border:1px solid var(--border);
-      background: rgba(255,255,255,.03);
-      display:flex;
-      gap:12px;
-      align-items:flex-start;
-    }
-    .avatar{
-      width:52px;height:52px;border-radius:18px;
-      background: rgba(255,255,255,.06);
-      border:1px solid var(--border);
-      display:grid;place-items:center;
-      font-weight:900;
-      flex:0 0 auto;
-    }
-    .seller h4{margin:0 0 4px}
-    .seller .bio{margin:0; color:var(--muted); line-height:1.6; font-size:13px}
-    .seller .line{margin-top:10px; display:flex; gap:8px; flex-wrap:wrap}
-    .pill{
-      font-size:12px;
-      padding:6px 10px;
-      border-radius:999px;
-      border:1px solid var(--border);
-      background: rgba(255,255,255,.03);
-    }
-    @media (max-width: 980px){
-      .seller{grid-column: span 12}
-    }
-
-    /* Forms / Modal */
-    .note{margin-top:10px; color:var(--muted); font-size:12px; line-height:1.7}
-    form{
-      margin-top:12px;
-      max-width: 820px;
-      border:1px solid var(--border);
-      border-radius: var(--radius);
-      background: rgba(255,255,255,.03);
-      padding:16px;
-      box-shadow: var(--shadow);
-    }
-    .fgrid{display:grid;grid-template-columns: 1fr 1fr; gap:12px}
-    @media (max-width: 980px){ .fgrid{grid-template-columns: 1fr} }
-    label{font-size:12px; color:var(--muted); display:block; margin-bottom:6px}
+    .tab.active{border-color: rgba(74,163,255,.45);background: rgba(74,163,255,.16)}
     input, textarea, select{
-      width:100%;
-      border-radius: 14px;
-      border:1px solid var(--border);
-      background: rgba(0,0,0,.18);
-      padding:10px 12px;
-      color:var(--text);
-      outline:none;
-      font-size:14px;
+      width:100%; border-radius: 14px; border:1px solid var(--border);
+      background: rgba(0,0,0,.18); padding:10px 12px; color:var(--text);
+      outline:none; font-size:14px;
     }
-    textarea{min-height:110px; resize:vertical}
-    .factions{display:flex; gap:10px; flex-wrap:wrap; margin-top:12px}
+    textarea{min-height:110px;resize:vertical}
+    label{font-size:12px;color:var(--muted);display:block;margin-bottom:6px}
+    .fgrid{display:grid;grid-template-columns: 1fr 1fr;gap:12px}
+    @media (max-width:900px){ .fgrid{grid-template-columns:1fr} }
 
-    .modalWrap{
-      position:fixed; inset:0;
-      display:none;
-      place-items:center;
-      z-index:100;
-      background: rgba(0,0,0,.6);
-      padding:18px;
+    .list{display:flex;flex-direction:column;gap:10px;margin-top:10px}
+    .item{
+      border:1px solid var(--border);background: rgba(255,255,255,.03);
+      border-radius:16px;padding:12px;
     }
-    .modal{
-      width: min(720px, 95vw);
-      border-radius: var(--radius);
-      border:1px solid var(--border);
-      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
-      box-shadow: var(--shadow);
-      padding:16px;
+    .itemTop{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+    .itemTitle{font-weight:900}
+    .hr{height:1px;background: var(--border);margin:12px 0}
+    .actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+    .status{
+      font-weight:900;
+      padding:6px 10px;border-radius:999px;border:1px solid var(--border);
+      background: rgba(255,255,255,.03);font-size:12px;
     }
-    .modalHead{display:flex; gap:10px; align-items:center; justify-content:space-between}
-    .modalHead h3{margin:0}
-    .x{border:1px solid var(--border); background: rgba(255,255,255,.04); color:var(--text); border-radius:12px; padding:8px 10px; cursor:pointer}
-
-    section.page{display:none}
-    section.page.active{display:block}
-    footer{margin-top:22px;color:rgba(255,255,255,.45);font-size:12px}
-    .hr{height:1px;background:var(--border); margin:14px 0}
+    .s-open{color:var(--warn)}
+    .s-done{color:var(--ok)}
+    .s-closed{color:var(--danger)}
+    .hidden{display:none !important}
   </style>
 </head>
 <body>
-
-  <div class="topbar">
-    <div class="brandline">
-      <button class="burger" id="openMenu">☰ القائمة</button>
-      <div class="title">Voxa Store</div>
-    </div>
-  </div>
-  <div class="overlay" id="overlay"></div>
-
-  <div class="app">
-    <aside id="sidebar">
-      <div class="logo">
+  <div class="wrap">
+    <div class="header">
+      <div class="title">
         <div class="badge">VX</div>
         <div>
-          <h1>Voxa Store</h1>
-          <p>Marketplace Demo — سايدبار + شوب</p>
+          <h1>Voxa Admin Panel</h1>
+          <p>Login بالباسورد → Sellers / Orders / Issues / Supplies</p>
         </div>
       </div>
-
-      <nav>
-        <button class="navbtn active" data-page="about">
-          <div class="navicon">ℹ️</div>
-          <div class="navtext">
-            <div class="t">About us</div>
-            <div class="d">معلومات عننا</div>
-          </div>
-        </button>
-
-        <button class="navbtn" data-page="shop">
-          <div class="navicon">🛒</div>
-          <div class="navtext">
-            <div class="t">Shop</div>
-            <div class="d">المنتجات</div>
-          </div>
-        </button>
-
-        <button class="navbtn" data-page="sellers">
-          <div class="navicon">👤</div>
-          <div class="navtext">
-            <div class="t">Sellers</div>
-            <div class="d">البائعين</div>
-          </div>
-        </button>
-
-        <button class="navbtn" data-page="contact">
-          <div class="navicon">✉️</div>
-          <div class="navtext">
-            <div class="t">Contact us</div>
-            <div class="d">التواصل معنا</div>
-          </div>
-        </button>
-
-        <!-- ✅ القائمة الخامسة -->
-        <button class="navbtn" data-page="payments">
-          <div class="navicon">💳</div>
-          <div class="navtext">
-            <div class="t">مراجعة طرق الدفع</div>
-            <div class="d">Checkout + طرق الدفع</div>
-          </div>
-        </button>
-
-        <button class="navbtn" data-page="support">
-          <div class="navicon">🛠️</div>
-          <div class="navtext">
-            <div class="t">الدعم الفني</div>
-            <div class="d">Discord Support</div>
-          </div>
-        </button>
-      </nav>
-
-      <div class="sidecard">
-        <div class="rowflex">
-          <div class="small" style="font-weight:900;color:var(--text)">وضع البائع (Seller Mode)</div>
-          <label class="switch" title="في النسخة الحقيقية: يتحكم فيها تسجيل الدخول للبائعين">
-            <input type="checkbox" id="sellerModeToggle" />
-            <span class="small">تفعيل</span>
-          </label>
-        </div>
-        <div class="small" style="margin-top:10px">
-          ✅ لما تفعل وضع البائع هيظهر زر <b style="color:var(--text)">+ إضافة منتج</b> و علامة + في الأقسام الفاضية.
-        </div>
-        <a class="pilllink" href="https://discord.gg/uRfdkYg9" target="_blank" rel="noopener">فتح الدعم الفني على Discord</a>
+      <div class="row">
+        <a class="btn primary" href="./index.html">رجوع للموقع</a>
+        <span class="pill" id="loginPill">غير مسجل</span>
+        <button class="btn danger hidden" id="logoutBtn">خروج</button>
       </div>
-    </aside>
+    </div>
 
-    <main>
-      <!-- ABOUT -->
-      <section class="page active" id="page-about">
-        <div class="pagehead">
+    <div class="grid">
+      <!-- Login -->
+      <div class="card" id="loginCard">
+        <h2>تسجيل دخول الأدمن</h2>
+        <div class="muted">البانل مش هتظهر لحد معاه الباسورد.</div>
+        <div class="hr"></div>
+        <div class="fgrid">
           <div>
-            <h2>About us</h2>
-            <p>
-              إحنا Voxa Store — منصة بيع وشراء قوية 💙
-              معانا <b>190 دليل</b> و <b>بائعين جامدين</b> شغالين <b>24 ساعة</b> عشان تجربتك تبقى سريعة وآمنة.
-            </p>
+            <label>الباسورد</label>
+            <input id="passInput" type="password" placeholder="اكتب الباسورد" />
           </div>
-          <div class="chiprow">
-            <span class="chip">📘 190 دليل</span>
-            <span class="chip">🔥 Sellers جامدين</span>
-            <span class="chip">⏱️ 24/7 شغالين</span>
-          </div>
-        </div>
-
-        <div class="grid">
-          <div class="card">
-            <h3>ليه Voxa Store؟</h3>
-            <p>لأننا بنقدملك نظام واضح + بائعين كتير + دعم سريع + تجربة سهلة.</p>
-            <div class="meta">
-              <span class="tag">ثقة</span>
-              <span class="tag">سرعة</span>
-              <span class="tag">دعم</span>
-            </div>
-          </div>
-
-          <div class="card">
-            <h3>نظام الشوب</h3>
-            <p>الأقسام واضحة (Nitros / Credits / Visas / Effects / Boosts / Accounts) والبائعين هم اللي بيضيفوا منتجاتهم.</p>
-            <div class="meta">
-              <span class="tag">Multi Sellers</span>
-              <span class="tag">أقسام</span>
-              <span class="tag">منظم</span>
-            </div>
-          </div>
-
-          <div class="card">
-            <h3>إزاي هيتطور؟</h3>
-            <p>في النسخة الكاملة: تسجيل/دخول للبائعين، إضافة منتجات حقيقية، دفع، طلبات، وإدارة.</p>
-            <div class="meta">
-              <span class="tag">Dashboard</span>
-              <span class="tag">Checkout</span>
-              <span class="tag">Orders</span>
-            </div>
-          </div>
-
-          <div class="card">
-            <h3>الدعم الفني</h3>
-            <p>لو حصل أي مشكلة — تواصل فورًا مع الدعم الفني على ديسكورد.</p>
-            <div class="meta">
-              <span class="tag">Discord</span>
-              <span class="tag">Tickets</span>
-              <span class="tag">24/7</span>
-            </div>
-          </div>
-        </div>
-
-        <footer>© Voxa Store — UI Demo</footer>
-      </section>
-
-      <!-- SHOP -->
-      <section class="page" id="page-shop">
-        <div class="pagehead">
           <div>
-            <h2>Shop</h2>
-            <p>
-              اختار القسم من فوق. الأقسام فاضية افتراضيًا — البائعين هم اللي بيضيفوا منتجاتهم.
-              (في الديمو: فعل Seller Mode عشان تضيف منتجات تجريبية).
-            </p>
-          </div>
-          <div class="chiprow">
-            <span class="chip" id="cartCount">🧺 السلة: 0</span>
-            <span class="chip" id="cartTotal">💰 الإجمالي: 0</span>
+            <label>زر الدخول</label>
+            <button class="btn ok" id="loginBtn">دخول</button>
           </div>
         </div>
+        <div class="muted" id="loginNote" style="margin-top:10px"></div>
+      </div>
 
-        <!-- ✅ Tabs -->
-        <div class="tabs" id="categoryTabs"></div>
-
-        <div class="toolbar">
-          <div class="search">
-            🔎
-            <input id="searchInput" placeholder="ابحث داخل القسم الحالي…" />
+      <!-- Admin -->
+      <div class="card hidden" id="adminCard">
+        <div class="row">
+          <div>
+            <h2 style="margin:0">Dashboard</h2>
+            <div class="muted" id="countsPill">…</div>
           </div>
-
-          <div style="display:flex; gap:10px; flex-wrap:wrap">
-            <button class="btn ok" id="checkoutBtn">إتمام الشراء</button>
-            <button class="btn danger" id="clearCart">تفريغ السلة</button>
-            <button class="btn primary" id="addProductBtn" style="display:none">+ إضافة منتج</button>
-          </div>
+          <span class="pill">كل حاجة بتتخزن LocalStorage (Demo)</span>
         </div>
-
-        <div class="grid" id="productsGrid"></div>
 
         <div class="hr"></div>
-        <div class="note">
-          * “إتمام الشراء” هنا ديمو: هينقلك لصفحة <b>مراجعة طرق الدفع</b> وتقدر تأكد الطلب.
-        </div>
-      </section>
 
-      <!-- SELLERS -->
-      <section class="page" id="page-sellers">
-        <div class="pagehead">
-          <div>
-            <h2>Sellers</h2>
-            <p>قائمة البائعين (مثال). في النسخة الكاملة: لكل بائع صفحة ومنتجاته وتقييماته.</p>
-          </div>
-          <div class="chiprow">
-            <span class="chip">👥 بائعين</span>
-            <span class="chip">⭐ تقييمات</span>
-          </div>
+        <div class="tabs">
+          <button class="tab active" data-tab="sellers">Sellers</button>
+          <button class="tab" data-tab="orders">Orders</button>
+          <button class="tab" data-tab="issues">Issues</button>
+          <button class="tab" data-tab="supplies">Supplies</button>
         </div>
 
-        <div class="grid" id="sellersGrid"></div>
-      </section>
+        <!-- SELLERS -->
+        <div id="tab-sellers" style="margin-top:12px">
+          <div class="muted">إضافة/حذف بائعين (ينعكس على صفحة Sellers في الموقع).</div>
+          <div class="hr"></div>
 
-      <!-- CONTACT -->
-      <section class="page" id="page-contact">
-        <div class="pagehead">
-          <div>
-            <h2>Contact us</h2>
-            <p>اكتب بياناتك ورسالتك (ديمو). لو عايز إرسال حقيقي نربط API.</p>
-          </div>
-          <div class="chiprow">
-            <span class="chip">⏱️ رد سريع</span>
-            <span class="chip">📩 متاحين</span>
-          </div>
-        </div>
-
-        <form id="contactForm">
           <div class="fgrid">
             <div>
-              <label>الاسم</label>
-              <input required name="name" placeholder="اسمك" />
+              <label>يوزر البائع</label>
+              <input id="sellerInput" placeholder="مثال: gq_8" />
             </div>
             <div>
-              <label>الإيميل</label>
-              <input required type="email" name="email" placeholder="name@example.com" />
+              <label>زر الإضافة</label>
+              <button class="btn primary" id="addSellerBtn">+ إضافة بائع</button>
+            </div>
+          </div>
+
+          <div class="list" id="sellersList"></div>
+        </div>
+
+        <!-- ORDERS -->
+        <div id="tab-orders" class="hidden" style="margin-top:12px">
+          <div class="muted">كل الطلبات هنا. (حالياً إضافة يدوية ديمو).</div>
+          <div class="hr"></div>
+
+          <div class="fgrid">
+            <div>
+              <label>اسم العميل</label>
+              <input id="orderCustomer" placeholder="Ahmed" />
+            </div>
+            <div>
+              <label>وسيلة التواصل</label>
+              <input id="orderContact" placeholder="Discord/رقم..." />
+            </div>
+          </div>
+          <div class="fgrid" style="margin-top:12px">
+            <div>
+              <label>تفاصيل الطلب</label>
+              <input id="orderDetails" placeholder="مثال: Nitro 1m" />
+            </div>
+            <div>
+              <label>الحالة</label>
+              <select id="orderStatus">
+                <option value="open">open</option>
+                <option value="done">done</option>
+                <option value="closed">closed</option>
+              </select>
+            </div>
+          </div>
+          <div style="margin-top:12px">
+            <button class="btn primary" id="addOrderBtn">+ إضافة Order</button>
+          </div>
+
+          <div class="list" id="ordersList"></div>
+        </div>
+
+        <!-- ISSUES -->
+        <div id="tab-issues" class="hidden" style="margin-top:12px">
+          <div class="muted">الشكاوي اللي جاية من Support. لكل مشكلة زر “رد”.</div>
+          <div class="hr"></div>
+
+          <div class="list" id="issuesList"></div>
+        </div>
+
+        <!-- SUPPLIES -->
+        <div id="tab-supplies" class="hidden" style="margin-top:12px">
+          <div class="muted">هنا تضيف المنتجات اللي تتباع وتظهر في Shop.</div>
+          <div class="hr"></div>
+
+          <div class="fgrid">
+            <div>
+              <label>القسم</label>
+              <select id="supCategory">
+                <option value="nitros">nitros</option>
+                <option value="credits">credits</option>
+                <option value="visas">visas</option>
+                <option value="effects">effects</option>
+                <option value="boosts">boosts</option>
+                <option value="accounts">accounts</option>
+              </select>
+            </div>
+            <div>
+              <label>اسم المنتج</label>
+              <input id="supTitle" placeholder="Nitro 1 Month" />
+            </div>
+          </div>
+
+          <div class="fgrid" style="margin-top:12px">
+            <div>
+              <label>السعر (EGP)</label>
+              <input id="supPrice" type="number" min="1" placeholder="250" />
+            </div>
+            <div>
+              <label>البائع (يوزر)</label>
+              <input id="supSeller" placeholder="@seller" />
             </div>
           </div>
 
           <div style="margin-top:12px">
-            <label>الرسالة</label>
-            <textarea required name="message" placeholder="اكتب رسالتك هنا…"></textarea>
+            <label>وصف</label>
+            <textarea id="supDesc" placeholder="وصف سريع…"></textarea>
           </div>
 
-          <div class="factions">
-            <button class="btn primary" type="submit">إرسال</button>
-            <button class="btn" type="reset">مسح</button>
+          <div style="margin-top:12px">
+            <button class="btn primary" id="addSupplyBtn">+ إضافة منتج</button>
           </div>
 
-          <div class="note" id="contactNote">* ديمو فقط.</div>
-        </form>
-      </section>
-
-      <!-- ✅ PAYMENT REVIEW PAGE -->
-      <section class="page" id="page-payments">
-        <div class="pagehead">
-          <div>
-            <h2>مراجعة طرق الدفع</h2>
-            <p>هنا بتراجع طلبك، تختار طريقة الدفع، وتأكد الطلب (Demo).</p>
-          </div>
-          <div class="chiprow">
-            <span class="chip">🧾 ملخص الطلب</span>
-            <span class="chip">💳 طرق الدفع</span>
-          </div>
+          <div class="list" id="suppliesList"></div>
         </div>
 
-        <div class="grid">
-          <div class="card" style="grid-column: span 12">
-            <h3>ملخص السلة</h3>
-            <div id="orderSummary" class="small" style="margin-top:10px; line-height:1.9"></div>
-            <div class="meta">
-              <span class="tag" id="orderTotalTag">الإجمالي: 0</span>
-              <span class="tag" id="orderCountTag">عدد العناصر: 0</span>
-            </div>
-          </div>
-
-          <div class="card" style="grid-column: span 12">
-            <h3>اختار طريقة الدفع</h3>
-            <div class="fgrid" style="margin-top:12px">
-              <div>
-                <label>طريقة الدفع</label>
-                <select id="paymentMethod">
-                  <option value="vodafone">Vodafone Cash (مثال)</option>
-                  <option value="instapay">InstaPay (مثال)</option>
-                  <option value="usdt">USDT Crypto (مثال)</option>
-                  <option value="paypal">PayPal (مثال)</option>
-                </select>
-              </div>
-              <div>
-                <label>ملاحظة/اسم الحساب</label>
-                <input id="paymentNote" placeholder="مثال: رقم/يوزر/ID..." />
-              </div>
-            </div>
-
-            <div class="note">
-              * في النسخة الحقيقية: هنا هتتحط أرقام/حسابات الدفع + نظام تحقق + حالة الطلب.
-            </div>
-
-            <div class="factions">
-              <button class="btn ok" id="confirmOrderBtn">تأكيد الطلب</button>
-              <button class="btn" id="backToShopBtn">رجوع للشوب</button>
-            </div>
-
-            <div class="note" id="confirmNote"></div>
-          </div>
-        </div>
-      </section>
-
-      <!-- SUPPORT -->
-      <section class="page" id="page-support">
-        <div class="pagehead">
-          <div>
-            <h2>الدعم الفني</h2>
-            <p>لو محتاج مساعدة فورًا — ادخل سيرفر الديسكورد للدعم الفني.</p>
-          </div>
-          <div class="chiprow">
-            <span class="chip">🛠️ Support</span>
-            <span class="chip">💬 Discord</span>
-          </div>
-        </div>
-
-        <div class="card" style="max-width:760px; grid-column: span 12">
-          <h3>رابط الدعم الفني</h3>
-          <p>اضغط الزر اللي تحت وهيدخلك على سيرفر الدعم.</p>
-          <div class="meta">
-            <a class="pilllink" href="https://discord.gg/uRfdkYg9" target="_blank" rel="noopener">فتح الدعم الفني على Discord</a>
-          </div>
-          <div class="note">* تقدر تضيف FAQ أو تذاكر لاحقًا.</div>
-        </div>
-      </section>
-
-      <footer style="margin-top:26px">واجهة تجريبية — الأقسام فاضية والبائعين يضيفوا منتجاتهم (Demo عبر Seller Mode).</footer>
-    </main>
-  </div>
-
-  <!-- Add Product Modal -->
-  <div class="modalWrap" id="modalWrap">
-    <div class="modal">
-      <div class="modalHead">
-        <h3>+ إضافة منتج (Demo)</h3>
-        <button class="x" id="closeModal">✖</button>
       </div>
-
-      <form id="addProductForm" style="box-shadow:none; margin-top:12px">
-        <div class="fgrid">
-          <div>
-            <label>اسم المنتج</label>
-            <input required name="title" placeholder="مثال: Nitro 1 Month" />
-          </div>
-          <div>
-            <label>السعر (EGP)</label>
-            <input required name="price" type="number" min="1" placeholder="مثال: 250" />
-          </div>
-        </div>
-
-        <div class="fgrid" style="margin-top:12px">
-          <div>
-            <label>القسم</label>
-            <select name="category" id="modalCategory"></select>
-          </div>
-          <div>
-            <label>متاح؟</label>
-            <select name="stock">
-              <option value="true">متاح</option>
-              <option value="false">غير متاح</option>
-            </select>
-          </div>
-        </div>
-
-        <div style="margin-top:12px">
-          <label>وصف مختصر</label>
-          <textarea required name="desc" placeholder="وصف سريع للمنتج…"></textarea>
-        </div>
-
-        <div class="factions">
-          <button class="btn ok" type="submit">إضافة</button>
-          <button class="btn" type="button" id="cancelModal">إلغاء</button>
-        </div>
-
-        <div class="note">* المنتج بيتضاف في الديمو داخل نفس الصفحة (مش بيتحفظ على سيرفر).</div>
-      </form>
     </div>
   </div>
 
   <script>
-    // ===== Sidebar + Navigation =====
-    const sidebar = document.getElementById("sidebar");
-    const overlay = document.getElementById("overlay");
-    const openMenu = document.getElementById("openMenu");
-    const navButtons = Array.from(document.querySelectorAll(".navbtn"));
-    const pages = {
-      about: document.getElementById("page-about"),
-      shop: document.getElementById("page-shop"),
-      sellers: document.getElementById("page-sellers"),
-      contact: document.getElementById("page-contact"),
-      payments: document.getElementById("page-payments"),
-      support: document.getElementById("page-support"),
+    // ✅ غيّر الباسورد هنا
+    const PANEL_PASSWORD = "VOXA-PANEL-KEY";
+
+    // Storage keys shared with the site
+    const KEY_AUTH    = "voxa_panel_auth";
+    const KEY_SELLERS = "voxa_sellers";
+    const KEY_ORDERS  = "voxa_orders";
+    const KEY_ISSUES  = "voxa_issues";
+    const KEY_SUPPLY  = "voxa_supplies";
+
+    // Defaults (from your request)
+    const DEFAULT_SELLERS = ["gq_8", "k_i_l_"];
+    const CATEGORIES = ["nitros","credits","visas","effects","boosts","accounts"];
+
+    // Helpers
+    const uid = (p)=> p + "_" + Math.random().toString(16).slice(2) + Date.now().toString(16);
+    const loadJSON = (k, f)=> { try{ return JSON.parse(localStorage.getItem(k) || JSON.stringify(f)); }catch{return f;} };
+    const saveJSON = (k, v)=> localStorage.setItem(k, JSON.stringify(v));
+    const isAuthed = ()=> localStorage.getItem(KEY_AUTH) === "true";
+    const setAuth = (v)=> localStorage.setItem(KEY_AUTH, v ? "true" : "false");
+    const esc = (s)=> String(s||"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#039;");
+
+    // Ensure defaults exist
+    if (!localStorage.getItem(KEY_SELLERS)) saveJSON(KEY_SELLERS, DEFAULT_SELLERS);
+    if (!localStorage.getItem(KEY_ORDERS))  saveJSON(KEY_ORDERS, []);
+    if (!localStorage.getItem(KEY_ISSUES))  saveJSON(KEY_ISSUES, []);
+    if (!localStorage.getItem(KEY_SUPPLY))  saveJSON(KEY_SUPPLY, []);
+
+    // Elements
+    const loginPill = document.getElementById("loginPill");
+    const loginCard = document.getElementById("loginCard");
+    const adminCard = document.getElementById("adminCard");
+    const logoutBtn = document.getElementById("logoutBtn");
+
+    const passInput = document.getElementById("passInput");
+    const loginBtn  = document.getElementById("loginBtn");
+    const loginNote = document.getElementById("loginNote");
+    const countsPill= document.getElementById("countsPill");
+
+    // Tabs
+    const tabBtns = Array.from(document.querySelectorAll(".tab"));
+    const tabs = {
+      sellers: document.getElementById("tab-sellers"),
+      orders: document.getElementById("tab-orders"),
+      issues: document.getElementById("tab-issues"),
+      supplies: document.getElementById("tab-supplies")
     };
 
-    function setActivePage(key){
-      Object.values(pages).forEach(p => p.classList.remove("active"));
-      pages[key].classList.add("active");
-      navButtons.forEach(b => b.classList.toggle("active", b.dataset.page === key));
-      history.replaceState(null, "", "#" + key);
+    function showTab(name){
+      tabBtns.forEach(b=> b.classList.toggle("active", b.dataset.tab===name));
+      Object.entries(tabs).forEach(([k,el])=> el.classList.toggle("hidden", k!==name));
+    }
+    tabBtns.forEach(b=> b.addEventListener("click", ()=> showTab(b.dataset.tab)));
 
-      if (window.innerWidth <= 980){
-        sidebar.classList.remove("open");
-        overlay.classList.remove("show");
-      }
-      if (key === "payments") renderPaymentReview();
+    // Auth UI
+    function applyAuthUI(){
+      const ok = isAuthed();
+      loginPill.textContent = ok ? "مسجل ✅" : "غير مسجل";
+      loginCard.classList.toggle("hidden", ok);
+      adminCard.classList.toggle("hidden", !ok);
+      logoutBtn.classList.toggle("hidden", !ok);
+      if (ok) renderAll();
     }
 
-    navButtons.forEach(btn=> btn.addEventListener("click", ()=> setActivePage(btn.dataset.page)));
-    openMenu?.addEventListener("click", ()=>{ sidebar.classList.add("open"); overlay.classList.add("show"); });
-    overlay.addEventListener("click", ()=>{ sidebar.classList.remove("open"); overlay.classList.remove("show"); });
+    logoutBtn.addEventListener("click", ()=>{ setAuth(false); applyAuthUI(); });
 
-    const initial = (location.hash || "#about").replace("#","");
-    if (pages[initial]) setActivePage(initial);
-
-    // ===== Seller Mode =====
-    let isSellerMode = false;
-    const sellerModeToggle = document.getElementById("sellerModeToggle");
-    const addProductBtn = document.getElementById("addProductBtn");
-
-    sellerModeToggle.addEventListener("change", ()=>{
-      isSellerMode = sellerModeToggle.checked;
-      addProductBtn.style.display = isSellerMode ? "inline-flex" : "none";
-      renderProducts();
-    });
-
-    // ===== Data =====
-    const categories = [
-      { id:"nitros",  label:"nitros" },
-      { id:"credits", label:"credits" },
-      { id:"visas",   label:"visas" },
-      { id:"effects", label:"effects" },
-      { id:"boosts",  label:"boosts" },
-      { id:"accounts",label:"accounts" },
-    ];
-    let activeCategory = "nitros";
-
-    const sellers = [
-      { id:"s1", name:"Seller One", rating:4.8, niche:"Accounts", about:"بائع موثوق في الحسابات والخدمات الرقمية.", since:"2023", sales: 1200 },
-      { id:"s2", name:"Seller Pro", rating:4.6, niche:"Gaming", about:"ملحقات وحلول للجيمينج.", since:"2022", sales: 780 },
-      { id:"s3", name:"Top Seller", rating:4.9, niche:"Services", about:"خدمات سريعة + متابعة قوية.", since:"2021", sales: 2100 },
-    ];
-
-    // ✅ الأقسام فاضية افتراضيًا (زي طلبك)
-    let products = [];
-
-    // ===== Render Sellers =====
-    const sellersGrid = document.getElementById("sellersGrid");
-    function renderSellers(){
-      sellersGrid.innerHTML = sellers.map(s=>{
-        const initials = s.name.split(" ").map(x=>x[0]).slice(0,2).join("").toUpperCase();
-        return `
-          <div class="seller">
-            <div class="avatar">${initials}</div>
-            <div>
-              <h4>${s.name} <span style="color:var(--warn); font-weight:900">★ ${s.rating}</span></h4>
-              <p class="bio">${s.about}</p>
-              <div class="line">
-                <span class="pill">التخصص: ${s.niche}</span>
-                <span class="pill">من: ${s.since}</span>
-                <span class="pill">مبيعات: ${s.sales}</span>
-              </div>
-            </div>
-          </div>
-        `;
-      }).join("");
-    }
-    renderSellers();
-
-    // ===== Tabs =====
-    const categoryTabs = document.getElementById("categoryTabs");
-    const modalCategory = document.getElementById("modalCategory");
-
-    function renderTabs(){
-      categoryTabs.innerHTML = categories.map(c=>{
-        const plus = isSellerMode ? `<span class="plus" data-plus="${c.id}" title="إضافة منتج للقسم">+</span>` : "";
-        return `
-          <button class="tab ${c.id===activeCategory ? "active":""}" data-tab="${c.id}">
-            ${c.label} ${plus}
-          </button>
-        `;
-      }).join("");
-
-      // modal select
-      modalCategory.innerHTML = categories.map(c=> `<option value="${c.id}">${c.label}</option>`).join("");
-
-      // tab click
-      categoryTabs.querySelectorAll("[data-tab]").forEach(btn=>{
-        btn.addEventListener("click", (e)=>{
-          const id = btn.getAttribute("data-tab");
-          activeCategory = id;
-          renderTabs();
-          renderProducts();
-        });
-      });
-
-      // plus click
-      categoryTabs.querySelectorAll("[data-plus]").forEach(p=>{
-        p.addEventListener("click", (e)=>{
-          e.stopPropagation();
-          if (!isSellerMode) return;
-          const cat = p.getAttribute("data-plus");
-          openAddModal(cat);
-        });
-      });
-    }
-    renderTabs();
-
-    // ===== Cart =====
-    const cart = new Map(); // productId -> qty
-    const cartCount = document.getElementById("cartCount");
-    const cartTotal = document.getElementById("cartTotal");
-    const checkoutBtn = document.getElementById("checkoutBtn");
-
-    function getProduct(id){ return products.find(p=>p.id===id); }
-
-    function updateCartUI(){
-      let count = 0, total = 0;
-      for (const [pid, qty] of cart.entries()){
-        const p = getProduct(pid);
-        if (!p) continue;
-        count += qty;
-        total += p.price * qty;
-      }
-      cartCount.textContent = `🧺 السلة: ${count}`;
-      cartTotal.textContent = `💰 الإجمالي: ${total} EGP`;
-    }
-
-    document.getElementById("clearCart").addEventListener("click", ()=>{
-      cart.clear();
-      updateCartUI();
-      renderPaymentReview();
-      alert("تم تفريغ السلة.");
-    });
-
-    checkoutBtn.addEventListener("click", ()=>{
-      setActivePage("payments");
-    });
-
-    // ===== Render Products =====
-    const productsGrid = document.getElementById("productsGrid");
-    const searchInput = document.getElementById("searchInput");
-
-    function renderProducts(){
-      // tabs style update
-      renderTabs();
-
-      const q = (searchInput.value || "").trim().toLowerCase();
-      const list = products
-        .filter(p => p.category === activeCategory)
-        .filter(p => !q || (p.title + " " + p.desc).toLowerCase().includes(q));
-
-      if (list.length === 0){
-        const sellerHint = isSellerMode
-          ? `القسم فاضي — اضغط <b>+ إضافة منتج</b> أو علامة <b>+</b> جنب اسم القسم فوق.`
-          : `القسم فاضي حاليًا — المنتجات هتظهر لما البائعين يضيفوا طلباتهم.`;
-        productsGrid.innerHTML = `
-          <div class="emptybox">
-            <b style="color:var(--text)">لا يوجد منتجات في قسم: ${activeCategory}</b><br/>
-            ${sellerHint}
-          </div>
-        `;
+    loginBtn.addEventListener("click", ()=>{
+      const p = (passInput.value||"").trim();
+      if (p !== PANEL_PASSWORD){
+        loginNote.textContent = "❌ باسورد غلط.";
         return;
       }
+      setAuth(true);
+      passInput.value = "";
+      loginNote.textContent = "";
+      applyAuthUI();
+    });
 
-      productsGrid.innerHTML = list.map(p=>{
-        const inStockStyle = p.stock ? "" : "border-color: rgba(255,92,122,.45); background: rgba(255,92,122,.14)";
-        const stockText = p.stock ? "متاح" : "غير متاح";
-        return `
-          <div class="product">
-            <div class="pimg">
-              <span class="price">${p.price} EGP</span>
-              <span class="stock" style="${inStockStyle}">${stockText}</span>
-            </div>
-            <h4>${p.title}</h4>
-            <p class="desc">${p.desc}</p>
-            <div class="row">
-              <div style="display:flex; gap:8px; flex-wrap:wrap">
-                <button class="btn primary" ${p.stock ? "" : "disabled"} data-add="${p.id}">إضافة للسلة</button>
-                <button class="btn danger" data-remove="${p.id}">إزالة</button>
-              </div>
-              <div style="color:var(--muted); font-size:12px">
-                في السلة: <b style="color:var(--text)">${cart.get(p.id) || 0}</b>
-              </div>
-            </div>
+    // Counts
+    function renderCounts(){
+      const sellers = loadJSON(KEY_SELLERS, DEFAULT_SELLERS).length;
+      const orders  = loadJSON(KEY_ORDERS, []).length;
+      const issues  = loadJSON(KEY_ISSUES, []).length;
+      const supplies= loadJSON(KEY_SUPPLY, []).length;
+      countsPill.textContent = `Sellers: ${sellers} — Orders: ${orders} — Issues: ${issues} — Supplies: ${supplies}`;
+    }
+
+    // ===== SELLERS =====
+    const sellerInput = document.getElementById("sellerInput");
+    const addSellerBtn = document.getElementById("addSellerBtn");
+    const sellersList = document.getElementById("sellersList");
+
+    function renderSellers(){
+      const list = loadJSON(KEY_SELLERS, DEFAULT_SELLERS);
+      sellersList.innerHTML = list.length ? list.map(u=>`
+        <div class="item">
+          <div class="itemTop">
+            <div class="itemTitle">@${esc(u)}</div>
+            <span class="status s-done">seller</span>
           </div>
-        `;
-      }).join("");
+          <div class="actions">
+            <button class="btn danger" data-del-seller="${esc(u)}">حذف</button>
+          </div>
+        </div>
+      `).join("") : `<div class="muted">لا يوجد بائعين.</div>`;
 
-      productsGrid.querySelectorAll("[data-add]").forEach(btn=>{
+      sellersList.querySelectorAll("[data-del-seller]").forEach(btn=>{
         btn.addEventListener("click", ()=>{
-          const id = btn.getAttribute("data-add");
-          const p = getProduct(id);
-          if (!p || !p.stock) return;
-          cart.set(id, (cart.get(id) || 0) + 1);
-          updateCartUI();
-          renderProducts();
-        });
-      });
-
-      productsGrid.querySelectorAll("[data-remove]").forEach(btn=>{
-        btn.addEventListener("click", ()=>{
-          const id = btn.getAttribute("data-remove");
-          const current = cart.get(id) || 0;
-          if (current <= 1) cart.delete(id);
-          else cart.set(id, current - 1);
-          updateCartUI();
-          renderProducts();
+          const user = btn.getAttribute("data-del-seller");
+          let arr = loadJSON(KEY_SELLERS, DEFAULT_SELLERS);
+          arr = arr.filter(x=>x !== user);
+          saveJSON(KEY_SELLERS, arr);
+          renderAll();
         });
       });
     }
 
-    searchInput.addEventListener("input", renderProducts);
-    renderProducts();
-    updateCartUI();
-
-    // ===== Contact Form =====
-    const contactForm = document.getElementById("contactForm");
-    const contactNote = document.getElementById("contactNote");
-    contactForm.addEventListener("submit", (e)=>{
-      e.preventDefault();
-      const fd = new FormData(contactForm);
-      const name = fd.get("name");
-      contactNote.textContent = `✅ تم استلام رسالتك يا ${name} (ديمو).`;
-      contactForm.reset();
+    addSellerBtn.addEventListener("click", ()=>{
+      const u = (sellerInput.value||"").trim();
+      if (!u) return;
+      let arr = loadJSON(KEY_SELLERS, DEFAULT_SELLERS);
+      if (!arr.includes(u)) arr.unshift(u);
+      saveJSON(KEY_SELLERS, arr);
+      sellerInput.value = "";
+      renderAll();
     });
 
-    // ===== Payments Page (Checkout Demo) =====
-    const orderSummary = document.getElementById("orderSummary");
-    const orderTotalTag = document.getElementById("orderTotalTag");
-    const orderCountTag = document.getElementById("orderCountTag");
-    const paymentMethod = document.getElementById("paymentMethod");
-    const paymentNote = document.getElementById("paymentNote");
-    const confirmOrderBtn = document.getElementById("confirmOrderBtn");
-    const confirmNote = document.getElementById("confirmNote");
-    const backToShopBtn = document.getElementById("backToShopBtn");
+    // ===== ORDERS =====
+    const ordersList = document.getElementById("ordersList");
+    const addOrderBtn = document.getElementById("addOrderBtn");
+    const orderCustomer = document.getElementById("orderCustomer");
+    const orderContact = document.getElementById("orderContact");
+    const orderDetails = document.getElementById("orderDetails");
+    const orderStatus = document.getElementById("orderStatus");
 
-    function renderPaymentReview(){
-      let count=0, total=0;
-      const lines = [];
-
-      for (const [pid, qty] of cart.entries()){
-        const p = getProduct(pid);
-        if (!p) continue;
-        count += qty;
-        total += p.price * qty;
-        lines.push(`• <b>${p.title}</b> × ${qty} — <span style="color:var(--text); font-weight:900">${p.price * qty} EGP</span>`);
-      }
-
-      if (lines.length === 0){
-        orderSummary.innerHTML = `السلة فاضية. روح الشوب واضف منتجات الأول.`;
-        orderTotalTag.textContent = `الإجمالي: 0`;
-        orderCountTag.textContent = `عدد العناصر: 0`;
-        confirmOrderBtn.disabled = true;
-      }else{
-        orderSummary.innerHTML = lines.join("<br/>");
-        orderTotalTag.textContent = `الإجمالي: ${total} EGP`;
-        orderCountTag.textContent = `عدد العناصر: ${count}`;
-        confirmOrderBtn.disabled = false;
-      }
+    function statusHTML(s){
+      if (s==="open") return `<span class="status s-open">open</span>`;
+      if (s==="done") return `<span class="status s-done">done</span>`;
+      return `<span class="status s-closed">closed</span>`;
     }
 
-    confirmOrderBtn.addEventListener("click", ()=>{
-      if (cart.size === 0) return;
-      const method = paymentMethod.value;
-      const note = (paymentNote.value || "").trim();
+    function renderOrders(){
+      const list = loadJSON(KEY_ORDERS, []);
+      ordersList.innerHTML = list.length ? list.map(o=>`
+        <div class="item">
+          <div class="itemTop">
+            <div class="itemTitle">${esc(o.details)}</div>
+            ${statusHTML(o.status)}
+          </div>
+          <div class="muted" style="margin-top:6px">
+            العميل: <b style="color:var(--text)">${esc(o.customer)}</b> —
+            تواصل: <b style="color:var(--text)">${esc(o.contact)}</b><br/>
+            وقت: ${new Date(o.at).toLocaleString()}
+          </div>
+          <div class="actions">
+            <button class="btn ok" data-o-set="done" data-oid="${o.id}">done</button>
+            <button class="btn danger" data-o-set="closed" data-oid="${o.id}">closed</button>
+            <button class="btn" data-o-del="${o.id}">حذف</button>
+          </div>
+        </div>
+      `).join("") : `<div class="muted">لا يوجد Orders.</div>`;
 
-      const methodName = ({
-        vodafone: "Vodafone Cash",
-        instapay: "InstaPay",
-        usdt: "USDT Crypto",
-        paypal: "PayPal"
-      })[method] || method;
-
-      confirmNote.innerHTML =
-        `✅ تم تأكيد الطلب (Demo).<br/>` +
-        `طريقة الدفع: <b>${methodName}</b>${note ? ` — ملاحظة: <b>${note}</b>` : ""}<br/>` +
-        `دلوقتي في النسخة الحقيقية: الطلب هيتسجل + هيتبعت للدعم/البائعين للتنفيذ.`;
-
-      // (اختياري) نفرغ السلة بعد التأكيد:
-      cart.clear();
-      updateCartUI();
-      renderProducts();
-      renderPaymentReview();
-    });
-
-    backToShopBtn.addEventListener("click", ()=> setActivePage("shop"));
-
-    // ===== Add Product Modal =====
-    const modalWrap = document.getElementById("modalWrap");
-    const closeModal = document.getElementById("closeModal");
-    const cancelModal = document.getElementById("cancelModal");
-    const addProductForm = document.getElementById("addProductForm");
-
-    function openAddModal(categoryId){
-      modalWrap.style.display = "grid";
-      modalCategory.value = categoryId || activeCategory;
-    }
-    function closeAddModal(){
-      modalWrap.style.display = "none";
-      addProductForm.reset();
-    }
-
-    addProductBtn.addEventListener("click", ()=>{
-      if (!isSellerMode) return;
-      openAddModal(activeCategory);
-    });
-
-    closeModal.addEventListener("click", closeAddModal);
-    cancelModal.addEventListener("click", closeAddModal);
-    modalWrap.addEventListener("click", (e)=>{
-      if (e.target === modalWrap) closeAddModal();
-    });
-
-    function uid(){
-      return "p_" + Math.random().toString(16).slice(2) + Date.now().toString(16);
+      ordersList.querySelectorAll("[data-o-set]").forEach(btn=>{
+        btn.addEventListener("click", ()=>{
+          const id = btn.getAttribute("data-oid");
+          const st = btn.getAttribute("data-o-set");
+          const arr = loadJSON(KEY_ORDERS, []);
+          const it = arr.find(x=>x.id===id);
+          if (it){ it.status = st; saveJSON(KEY_ORDERS, arr); renderAll(); }
+        });
+      });
+      ordersList.querySelectorAll("[data-o-del]").forEach(btn=>{
+        btn.addEventListener("click", ()=>{
+          const id = btn.getAttribute("data-o-del");
+          const arr = loadJSON(KEY_ORDERS, []).filter(x=>x.id!==id);
+          saveJSON(KEY_ORDERS, arr);
+          renderAll();
+        });
+      });
     }
 
-    addProductForm.addEventListener("submit", (e)=>{
-      e.preventDefault();
-      if (!isSellerMode) return;
+    addOrderBtn.addEventListener("click", ()=>{
+      const customer = (orderCustomer.value||"").trim();
+      const contact  = (orderContact.value||"").trim();
+      const details  = (orderDetails.value||"").trim();
+      const status   = orderStatus.value;
+      if (!customer || !contact || !details) return;
 
-      const fd = new FormData(addProductForm);
-      const item = {
-        id: uid(),
-        title: String(fd.get("title") || "").trim(),
-        price: Number(fd.get("price") || 0),
-        category: String(fd.get("category") || activeCategory),
-        stock: String(fd.get("stock")) === "true",
-        desc: String(fd.get("desc") || "").trim(),
-      };
+      const arr = loadJSON(KEY_ORDERS, []);
+      arr.unshift({ id: uid("o"), at: new Date().toISOString(), customer, contact, details, status });
+      saveJSON(KEY_ORDERS, arr);
 
-      if (!item.title || !item.desc || !item.price) return;
-
-      products.push(item);
-
-      // لو ضاف في قسم مختلف، خلي التب يتحول عليه
-      activeCategory = item.category;
-      renderTabs();
-      renderProducts();
-      closeAddModal();
+      orderCustomer.value=""; orderContact.value=""; orderDetails.value=""; orderStatus.value="open";
+      renderAll();
     });
 
-    // initial payment summary
-    renderPaymentReview();
+    // ===== ISSUES =====
+    const issuesList = document.getElementById("issuesList");
+
+    function renderIssues(){
+      const list = loadJSON(KEY_ISSUES, []);
+      issuesList.innerHTML = list.length ? list.map(i=>`
+        <div class="item">
+          <div class="itemTop">
+            <div class="itemTitle">Issue: ${esc(i.type)}</div>
+            ${statusHTML(i.status)}
+          </div>
+          <div class="muted" style="margin-top:6px">
+            من: <b style="color:var(--text)">${esc(i.name)}</b> —
+            تواصل: <b style="color:var(--text)">${esc(i.contact)}</b><br/>
+            وقت: ${new Date(i.at).toLocaleString()}<br/>
+            التفاصيل: ${esc(i.details)}
+          </div>
+          <div class="actions">
+            <button class="btn primary" data-reply="${i.id}">رد</button>
+            <button class="btn ok" data-i-set="done" data-iid="${i.id}">done</button>
+            <button class="btn danger" data-i-set="closed" data-iid="${i.id}">closed</button>
+            <button class="btn" data-i-del="${i.id}">حذف</button>
+          </div>
+        </div>
+      `).join("") : `<div class="muted">لا يوجد Issues.</div>`;
+
+      issuesList.querySelectorAll("[data-i-set]").forEach(btn=>{
+        btn.addEventListener("click", ()=>{
+          const id = btn.getAttribute("data-iid");
+          const st = btn.getAttribute("data-i-set");
+          const arr = loadJSON(KEY_ISSUES, []);
+          const it = arr.find(x=>x.id===id);
+          if (it){ it.status = st; saveJSON(KEY_ISSUES, arr); renderAll(); }
+        });
+      });
+
+      issuesList.querySelectorAll("[data-i-del]").forEach(btn=>{
+        btn.addEventListener("click", ()=>{
+          const id = btn.getAttribute("data-i-del");
+          const arr = loadJSON(KEY_ISSUES, []).filter(x=>x.id!==id);
+          saveJSON(KEY_ISSUES, arr);
+          renderAll();
+        });
+      });
+
+      // Reply (Demo: saves reply text into issue.replies)
+      issuesList.querySelectorAll("[data-reply]").forEach(btn=>{
+        btn.addEventListener("click", ()=>{
+          const id = btn.getAttribute("data-reply");
+          const msg = prompt("اكتب الرد على الشكوى:");
+          if (!msg) return;
+
+          const arr = loadJSON(KEY_ISSUES, []);
+          const it = arr.find(x=>x.id===id);
+          if (!it) return;
+
+          if (!Array.isArray(it.replies)) it.replies = [];
+          it.replies.unshift({ at: new Date().toISOString(), msg: msg.trim() });
+          // optional: mark done after reply
+          it.status = "done";
+          saveJSON(KEY_ISSUES, arr);
+          alert("✅ تم حفظ الرد (Demo).");
+          renderAll();
+        });
+      });
+    }
+
+    // ===== SUPPLIES =====
+    const supCategory = document.getElementById("supCategory");
+    const supTitle = document.getElementById("supTitle");
+    const supPrice = document.getElementById("supPrice");
+    const supSeller = document.getElementById("supSeller");
+    const supDesc = document.getElementById("supDesc");
+    const addSupplyBtn = document.getElementById("addSupplyBtn");
+    const suppliesList = document.getElementById("suppliesList");
+
+    function renderSupplies(){
+      const list = loadJSON(KEY_SUPPLY, []);
+      suppliesList.innerHTML = list.length ? list.map(p=>`
+        <div class="item">
+          <div class="itemTop">
+            <div class="itemTitle">${esc(p.title)} <span class="muted">(${esc(p.category)})</span></div>
+            <span class="status s-done">${esc(p.price)} EGP</span>
+          </div>
+          <div class="muted" style="margin-top:6px">
+            Seller: <b style="color:var(--text)">@${esc(p.seller || "—")}</b><br/>
+            ${esc(p.desc)}
+          </div>
+          <div class="actions">
+            <button class="btn" data-s-del="${p.id}">حذف</button>
+          </div>
+        </div>
+      `).join("") : `<div class="muted">لا يوجد Products.</div>`;
+
+      suppliesList.querySelectorAll("[data-s-del]").forEach(btn=>{
+        btn.addEventListener("click", ()=>{
+          const id = btn.getAttribute("data-s-del");
+          const arr = loadJSON(KEY_SUPPLY, []).filter(x=>x.id!==id);
+          saveJSON(KEY_SUPPLY, arr);
+          renderAll();
+        });
+      });
+    }
+
+    addSupplyBtn.addEventListener("click", ()=>{
+      const cat = supCategory.value;
+      const title = (supTitle.value||"").trim();
+      const price = Number(supPrice.value||0);
+      const seller = (supSeller.value||"").trim().replace(/^@/,"");
+      const desc = (supDesc.value||"").trim();
+
+      if (!CATEGORIES.includes(cat) || !title || !price || !desc) return;
+
+      const arr = loadJSON(KEY_SUPPLY, []);
+      arr.unshift({ id: uid("p"), at: new Date().toISOString(), category: cat, title, price, seller, desc });
+      saveJSON(KEY_SUPPLY, arr);
+
+      supTitle.value=""; supPrice.value=""; supSeller.value=""; supDesc.value="";
+      renderAll();
+    });
+
+    // Render all
+    function renderAll(){
+      renderCounts();
+      renderSellers();
+      renderOrders();
+      renderIssues();
+      renderSupplies();
+    }
+
+    // Init
+    applyAuthUI();
+    if (isAuthed()) renderAll();
+    window.addEventListener("storage", ()=>{ if (isAuthed()) renderAll(); });
+
+    // Start on Sellers tab
+    showTab("sellers");
   </script>
 </body>
 </html>
